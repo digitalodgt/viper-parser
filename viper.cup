@@ -1,0 +1,53 @@
+package Viper;
+
+import java_cup.runtime.*;
+
+import java.io.StringReader;
+import java.io.IOException;
+import java.io.FileInputStream;
+
+parser code {:
+	public static void main(String args[]) throws Exception {
+
+		FileInputStream fis = new FileInputStream(args[0]);
+
+		new parser(new Yylex(fis)).parse();
+	}
+:}
+
+terminal SEMI, PLUS, MULT, MINUS, DIV, MOD;
+terminal LPAREN, RPAREN, LBRACE, RBRACE;
+terminal COLON, EQ, COMP, LT, LE, NEG;
+terminal IF, ELSE, INT, BOOL, STR, DEF, WHILE, RETURN;
+terminal String STR_CONST;
+terminal Integer INT_CONST;
+terminal Boolean BOOL_CONST;
+terminal String ID;
+
+non terminal program;
+non terminal func_part;
+non terminal func_list;
+non terminal expr;
+
+precedence left PLUS, MINUS;
+precedence left MULT, DIV;
+
+
+program 	::=	func_list;
+
+func_list	::=	func_list func_part
+			|	func_part;
+
+func_part 	::= expr;
+
+expr		::= INT_CONST:l PLUS INT_CONST:r SEMI
+					{:
+						System.out.println("Hijo izquierdo: " + l);
+						System.out.println("Hijo derecho:   " + r);
+					:}
+			|	ID:i SEMI
+					{:
+						System.out.println("Nombre del id:  " + i);
+					:}
+				;
+
