@@ -8,6 +8,7 @@ import java_cup.runtime.Symbol;
 
 %state COMMENT
 %state STRING
+%state STRINGQ
 
 SEMI = ";" 
 WHITE = (" "|\t|\n|\r)
@@ -17,10 +18,10 @@ MAYUSCULAS = [A-Z]
 ALFANUM = [a-zA-Z0-9]
 DIGIT = [0-9]
 BOOL = ("true"|"false")
-STRI = "\""
-CHARS = [^{STRI}]*
+QUOT = "\""
+CHARS = [^{QUOT}]+
 COMI = "'"
-CHARSCOM = [^{COMI}]*
+CHARSCOM = [^{COMI}]+
 
 %%
 
@@ -73,13 +74,15 @@ CHARSCOM = [^{COMI}]*
 
 <YYINITIAL>"return"	{ return new Symbol( sym.RETURN );	}
 
+<YYINITIAL>"void"	{ return new Symbol( sym.VOID );	}
+
 <YYINITIAL>"!"		{ return new Symbol( sym.NEG );	}
 
-<YYINITIAL>{STRI}	{ yybegin( STRING );	}
+<YYINITIAL>{QUOT}	{ yybegin( STRINGQ );	}
 
-<STRING>{CHARS}	{ return new Symbol( sym.STR_CONST, yytext() );		}
+<STRINGQ>{CHARS}	{ return new Symbol( sym.STR_CONST, yytext() );	}
 
-<STRING>{STRI}		{ yybegin( YYINITIAL);	}
+<STRINGQ>{QUOT}		{ yybegin( YYINITIAL);	}
 
 <YYINITIAL>{COMI}	{ yybegin( STRING );	}
 

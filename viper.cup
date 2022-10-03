@@ -16,9 +16,9 @@ parser code {:
 :}
 
 terminal SEMI, PLUS, MULT, MINUS, DIV, MOD;
-terminal LPAREN, RPAREN, LBRACE, RBRACE;
+terminal LPAREN, RPAREN, LBRACE, RBRACE, STRI;
 terminal COLON, EQ, COMP, LT, LE, NEG;
-terminal IF, ELSE, INT, BOOL, STR, DEF, WHILE, RETURN;
+terminal IF, ELSE, INT, BOOL, STR, DEF, WHILE, RETURN, VOID;
 terminal String STR_CONST;
 terminal Integer INT_CONST;
 terminal Boolean BOOL_CONST;
@@ -28,26 +28,71 @@ non terminal program;
 non terminal func_part;
 non terminal func_list;
 non terminal expr;
+non terminal rtype;
+non terminal formal;
+non terminal dtype;
+non terminal statement;
+non terminal return;
+non terminal exprlist;
 
 precedence left PLUS, MINUS;
-precedence left MULT, DIV;
+precedence left MULT, DIV, MOD;
+precedence left EQ, LT, LE, COMP;
+precedence left NEG;
 
 
-program 	::=	func_list;
+program 	::=	func_list {: System.out.println("success"); :};
 
 func_list	::=	func_list func_part
 			|	func_part;
 
-func_part 	::= expr;
+func_part 	::= 	  DEF ID LPAREN RPAREN COLON rtype LBRACE RBRACE 
+			| DEF ID LPAREN RPAREN COLON rtype LBRACE statement RBRACE
+			| DEF ID LPAREN RPAREN COLON rtype LBRACE statement return RBRACE
+			| DEF ID LPAREN RPAREN COLON rtype LBRACE return RBRACE
+			| DEF ID LPAREN formal RPAREN COLON rtype LBRACE RBRACE
+			| DEF ID LPAREN formal RPAREN COLON rtype LBRACE statement RBRACE
+			| DEF ID LPAREN formal RPAREN COLON rtype LBRACE statement return RBRACE
+			| DEF ID LPAREN formal RPAREN COLON rtype LBRACE return RBRACE
+			;
 
-expr		::= INT_CONST:l PLUS INT_CONST:r SEMI
-					{:
-						System.out.println("Hijo izquierdo: " + l);
-						System.out.println("Hijo derecho:   " + r);
-					:}
-			|	ID:i SEMI
-					{:
-						System.out.println("Nombre del id:  " + i);
-					:}
-				;
+			
+formal		::= ID COLON dtype;
+
+dtype		::= INT | BOOL | STR;
+
+
+rtype		::= INT | STR | VOID | BOOL;
+
+statement	::= 	  statement expr SEMI
+			| statement IF LPAREN expr RPAREN LBRACE statement RBRACE ELSE LBRACE statement RBRACE
+			| IF LPAREN expr RPAREN LBRACE statement RBRACE ELSE LBRACE statement RBRACE
+			| statement IF LPAREN expr RPAREN LBRACE RBRACE ELSE LBRACE statement RBRACE
+			| IF LPAREN expr RPAREN LBRACE RBRACE ELSE LBRACE statement RBRACE
+			| statement IF LPAREN expr RPAREN LBRACE statement RBRACE ELSE LBRACE RBRACE
+			| IF LPAREN expr RPAREN LBRACE statement RBRACE ELSE LBRACE RBRACE
+			| statement WHILE LPAREN expr RPAREN LBRACE statement RBRACE
+			| expr SEMI
+			;
+			
+return		::= RETURN expr SEMI;
+
+expr		::= 	  expr PLUS expr
+			| expr MINUS expr
+			| expr MULT expr
+			| expr DIV expr
+			| expr MOD expr
+			| expr LE expr
+			| expr LT expr
+			| expr EQ expr
+			| expr COMP expr
+			| MINUS expr
+			| NEG expr
+			| ID 
+			| LPAREN expr RPAREN
+			| LPAREN RPAREN
+			| ID expr 
+			| INT_CONST | STR_CONST | BOOL_CONST
+			| dtype expr
+			;
 
